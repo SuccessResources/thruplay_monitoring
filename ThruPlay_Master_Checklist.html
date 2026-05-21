@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MMI ThruPlay Master Checklist</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0d0f14;
+  --surface: #161920;
+  --surface2: #1e2230;
+  --border: #2a2f40;
+  --accent: #4f8ef7;
+  --accent2: #f7c24f;
+  --accent3: #4ff79e;
+  --danger: #f74f4f;
+  --warn: #f7904f;
+  --text: #e8eaf0;
+  --muted: #6b7394;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 0 60px;
+}
+
+/* HEADER */
+.masthead {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 40px 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.masthead-left { flex: 1; }
+.masthead-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.masthead-title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.masthead-sub { font-size: 12px; color: var(--muted); }
+.progress-wrap { display: flex; align-items: center; gap: 12px; }
+.progress-bar {
+  width: 160px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent3);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-pct {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent3);
+  min-width: 38px;
+}
+.btn-reset {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+/* TABS */
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  overflow-x: auto;
+  gap: 2px;
+}
+.tab {
+  padding: 12px 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.2s;
+  user-select: none;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* PANELS */
+.panel { display: none; padding: 32px 40px; }
+.panel.active { display: block; }
+
+/* SECTION */
+.section { margin-bottom: 36px; }
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+.section-complete {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* CHECKLIST ITEMS */
+.cl-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cl-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.cl-item:last-child { border-bottom: none; }
+.cl-item:hover { background: var(--surface2); }
+.cl-item.critical { border-left: 3px solid var(--danger); }
+.cl-item.warn { border-left: 3px solid var(--warn); }
+.cl-item.done { opacity: 0.4; }
+
+.cl-checkbox {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.cl-checkbox.checked {
+  background: var(--accent3);
+  border-color: var(--accent3);
+}
+.cl-checkbox.checked::after {
+  content: '✓';
+  color: #0d0f14;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cl-content { flex: 1; }
+.cl-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+.cl-note {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+.cl-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.badge-critical { background: rgba(247,79,79,0.15); color: var(--danger); border: 1px solid rgba(247,79,79,0.3); }
+.badge-must { background: rgba(247,194,79,0.15); color: var(--accent2); border: 1px solid rgba(247,194,79,0.3); }
+
+/* BENCHMARK TABLES */
+.bench-section { margin-bottom: 24px; }
+.bench-region {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+tr:last-child td { border-bottom: none; }
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.tag-green { color: var(--accent3); font-family: var(--mono); font-size: 12px; }
+.tag-yellow { color: var(--accent2); font-family: var(--mono); font-size: 12px; }
+.tag-red { color: var(--danger); font-family: var(--mono); font-size: 12px; }
+.tag-blue { color: var(--accent); font-family: var(--mono); font-size: 12px; }
+
+/* WEEK 1 DECISION TOOL */
+.decision-tool {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.decision-header {
+  background: var(--surface2);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+.decision-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.decision-title { font-size: 13px; font-weight: 600; }
+.decision-sub { font-size: 11px; color: var(--muted); }
+
+.decision-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0;
+}
+.audience-card {
+  padding: 16px 20px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.audience-card:nth-child(even) { border-right: none; }
+.audience-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.audience-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.audience-dot.active { background: var(--accent3); }
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+  gap: 8px;
+}
+.metric-label { font-size: 11px; color: var(--muted); }
+.metric-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--mono);
+  width: 110px;
+  text-align: right;
+  transition: border-color 0.2s;
+}
+.metric-input:focus { outline: none; border-color: var(--accent); }
+.decision-select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--sans);
+  width: 100%;
+  margin-top: 10px;
+  cursor: pointer;
+}
+.decision-select:focus { outline: none; border-color: var(--accent); }
+.decision-select.scale { border-color: var(--accent3); color: var(--accent3); }
+.decision-select.pause { border-color: var(--danger); color: var(--danger); }
+.decision-select.pivot { border-color: var(--accent2); color: var(--accent2); }
+.status-indicator {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-top: 8px;
+  display: inline-block;
+}
+.status-good { background: rgba(79,247,158,0.1); color: var(--accent3); border: 1px solid rgba(79,247,158,0.25); }
+.status-warn { background: rgba(247,144,79,0.1); color: var(--warn); border: 1px solid rgba(247,144,79,0.25); }
+.status-bad { background: rgba(247,79,79,0.1); color: var(--danger); border: 1px solid rgba(247,79,79,0.25); }
+
+/* MONITORING CADENCE */
+.cadence-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.cadence-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cadence-title-wrap { display: flex; align-items: center; gap: 12px; }
+.cadence-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.pill-daily { background: rgba(79,142,247,0.15); color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
+.pill-weekly { background: rgba(247,194,79,0.15); color: var(--accent2); border: 1px solid rgba(247,194,79,0.3); }
+.pill-biweekly { background: rgba(79,247,158,0.15); color: var(--accent3); border: 1px solid rgba(79,247,158,0.3); }
+.cadence-title { font-size: 14px; font-weight: 600; }
+.cadence-time { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+.action-table { width: 100%; }
+.action-table th { background: rgba(255,255,255,0.03); }
+
+/* EXPLAIN BOXES */
+.explain-box {
+  background: rgba(79,142,247,0.06);
+  border: 1px solid rgba(79,142,247,0.2);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #b0bce8;
+}
+.explain-box strong { color: var(--accent); }
+.explain-box .explain-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+/* RED FLAG */
+.redflag-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.redflag-item:last-child { border-bottom: none; }
+.redflag-icon { font-size: 16px; margin-top: 1px; }
+.redflag-flag { font-size: 13px; font-weight: 600; color: var(--danger); margin-bottom: 4px; }
+.redflag-action { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* EVENT SELECTOR */
+.event-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.event-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.event-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: var(--sans);
+  flex: 1;
+  max-width: 260px;
+  cursor: pointer;
+}
+.event-select:focus { outline: none; border-color: var(--accent); }
+.benchmark-ref {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.benchmark-ref span { color: var(--accent2); }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+/* PRINT */
+@media print {
+  body { background: white; color: black; }
+  .masthead { position: static; background: white; border-color: #ccc; }
+  .tabs { display: none; }
+  .panel { display: block !important; }
+  .decision-tool input, .decision-tool select { border-color: #ccc; }
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-left">
+    <div class="masthead-eyebrow">MMI — Meta Ads Operations</div>
+    <div class="masthead-title">ThruPlay Master Checklist</div>
+    <div class="masthead-sub">Multi-Format Creative · Location-Based Benchmarks · USD</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-pct" id="progressPct">0%</div>
+    <button class="btn-reset" onclick="resetAll()">Reset</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">① Pre-Launch</div>
+  <div class="tab" onclick="switchTab(1)">② Daily (5 min)</div>
+  <div class="tab" onclick="switchTab(2)">③ Week 1 Decision</div>
+  <div class="tab" onclick="switchTab(3)">④ Weekly Review</div>
+  <div class="tab" onclick="switchTab(4)">⑤ Bi-Weekly</div>
+  <div class="tab" onclick="switchTab(5)">📍 Benchmarks</div>
+  <div class="tab" onclick="switchTab(6)">🚨 Red Flags</div>
+</div>
+
+<!-- ======================== PANEL 0: PRE-LAUNCH ======================== -->
+<div class="panel active" id="panel0">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-title">Campaign Setup</div>
+      <div class="section-complete" id="s01"></div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Campaign Objective: <strong>AWARENESS</strong> <span class="cl-badge badge-critical">CRITICAL</span></div>
+          <div class="cl-note">In Meta Ads Manager → Campaign → Objective → Select "Awareness"</div>
+        </div>
+      </div>
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Ad Set Optimization Goal: <strong>MAXIMIZE THRUPLAY VIEWS</strong> <span class="cl-badge badge-critical">CRITICAL</span></div>
+          <div class="cl-note">Ad Set level → Optimization & Delivery → Performance Goal → "ThruPlay Views"</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Daily Budget Defined ($15–30 USD per audience set)</div>
+          <div class="cl-note">7 sets × $15–30/day = $105–210/day total minimum</div>
+        </div>
+      </div>
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Warm Audience Pixel Installed &amp; Verified <span class="cl-badge badge-critical">CRITICAL</span></div>
+          <div class="cl-note">Meta Events Manager → Verify pixel is firing on landing page</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Conversion Tracking Enabled</div>
+        </div>
+      </div>
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Frequency Cap: <strong>2 times every 7 days</strong> <span class="cl-badge badge-critical">CRITICAL</span></div>
+          <div class="cl-note">Ad Set → Audience Controls → Frequency Cap → 2 impressions / 7 days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-title">Creative Preparation</div>
+      <div class="section-complete" id="s02"></div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Video Size 1: <strong>1080×1920 Vertical</strong> — PRIORITY <span class="cl-badge badge-critical">CRITICAL</span></div>
+          <div class="cl-note">Covers Reels &amp; Stories. 78% more screen space on mobile = higher ThruPlay rate</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Video Size 2: <strong>1080×1080 Square</strong></div>
+          <div class="cl-note">Covers Feed placements</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Video Size 3: <strong>1920×1080 Horizontal</strong></div>
+          <div class="cl-note">Covers in-stream &amp; desktop</div>
+        </div>
+      </div>
+      <div class="cl-item warn" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">All 3 sizes uploaded to the SAME ad (not separate ads) <span class="cl-badge badge-must">MUST</span></div>
+          <div class="cl-note">This consolidates social proof — all views count on one post. Separate ads split views &amp; performance data.</div>
+        </div>
+      </div>
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Captions &amp; Subtitles Added <span class="cl-badge badge-critical">CRITICAL</span></div>
+          <div class="cl-note">85% of video is watched without sound. No captions = lost ThruPlays.</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Video Resolution: Minimum 1080p across all formats</div>
+        </div>
+      </div>
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">File Naming Convention: <strong>EventCode_SpeakerAbbr_LanguageAbbr_AdsNumber</strong> <span class="cl-badge badge-critical">CRITICAL</span></div>
+          <div class="cl-note">Example: BER2607_JS_ENG_01 / BRU2606_AL_GER_02</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-title">Ad Structure</div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Maximum 4–5 ads per ad set</div>
+          <div class="cl-note">More than 5 ads = Meta "Learning Limited" — not enough data per ad to optimize</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-title">7 Audience Sets</div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Set 1: Detailed Targeting / Interest <span class="cl-badge badge-critical">CRITICAL</span></div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Set 2: Lookalike (from previous warm audience)</div></div>
+      </div>
+      <div class="cl-item critical" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Set 3: Website Visitors — Last 180 days <span class="cl-badge badge-critical">CRITICAL</span></div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Set 4: Database / CRM List</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Set 5: Facebook Group Participants</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Set 6: Facebook Page Engagement — Last 365 days</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Set 7: Custom Audience / Other</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <div class="section-title">Copy &amp; Landing Page</div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Ad headline matches Landing Page H1</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Primary text clearly states value proposition</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">CTA Button: Learn More / Register</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Landing page URL verified &amp; mobile-responsive</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">UTM parameters added</div></div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content"><div class="cl-label">Copy language matches audience — ENG / GER</div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end panel0 -->
+
+<!-- ======================== PANEL 1: DAILY ======================== -->
+<div class="panel" id="panel1">
+  <div class="explain-box">
+    <div class="explain-title">How to Use — Daily Check (5 minutes every morning)</div>
+    You are NOT making decisions here. You are only scanning for <strong>red flags</strong> — things that need immediate attention before they waste budget. Open Ads Manager, set the view to <strong>Ad Sets tab</strong>, and run through this list. If everything is green, close it and move on.
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">Daily</div>
+      <div class="section-title">5-Minute Morning Check</div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">All 7 ad sets showing "Active" delivery status</div>
+          <div class="cl-note">If any shows "Off" or "Error" → investigate immediately before anything else</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Cost Per ThruPlay within location benchmark range</div>
+          <div class="cl-note">If 2× above your location's target → check creative &amp; audience size. See Benchmarks tab for your targets.</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">No ad set has entered "Learning" unexpectedly</div>
+          <div class="cl-note">If "Learning" appears → do NOT make any changes. Wait it out. Making changes resets the clock.</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Total daily spend within 80–100% of allocated budget</div>
+          <div class="cl-note">If underspending by 20%+ → audience may be too narrow, or bid too low</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">ThruPlay count accumulating (minimum 50+ by end of Day 1)</div>
+          <div class="cl-note">You need 500+ ThruPlays by end of Week 1 across top sets to make valid decisions</div>
+        </div>
+      </div>
+      <div class="cl-item" onclick="toggle(this)">
+        <div class="cl-checkbox"></div>
+        <div class="cl-content">
+          <div class="cl-label">Frequency is not spiking above 2.0 in the first 3 days</div>
+          <div class="cl-note">Early frequency spike = audience too small. If above 2.5 by Day 3 → expand targeting</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PANEL 2: WEEK 1 DECISION ======================== -->
+<div class="panel" id="panel2">
+
+  <div class="explain-box">
+    <div class="explain-title">What is this section for?</div>
+    <strong>The Week 1 Decision Checkpoint is a go/no-go decision tool for each of your 7 audience sets.</strong><br><br>
+    After 7 days, you will have enough data to decide which sets deserve more budget and which should be paused. The goal is to <strong>identify your top 3 performers</strong> and reallocate budget from the bottom 4.<br><br>
+    <strong>How to use CPM vs Benchmark:</strong> CPM tells you how expensive it is for Meta to show your ad 1,000 times. Your location has a known CPM range from your account history. If your CPM is <em>higher</em> than the benchmark, it means the auction is more competitive than usual — either your audience is too narrow, your creative relevance score is low, or there's a seasonal/competitive spike. If your CPM is <em>lower</em> than benchmark, Meta is delivering efficiently — good signal.<br><br>
+    <strong>You don't need a perfect CPM. You need a good Cost Per ThruPlay.</strong> CPM is context. Cost Per ThruPlay is the decision metric.
+  </div>
+
+  <div class="event-bar">
+    <div class="event-label">Event Location:</div>
+    <select class="event-select" id="locationSelect" onchange="updateBenchmarks()">
+      <option value="">-- Select event location --</option>
+      <option value="DE">Frankfurt / Germany (DE)</option>
+      <option value="BE">Brussels / Belgium (BE)</option>
+      <option value="NL">Amsterdam / Netherlands (NL)</option>
+      <option value="CH">Zurich / Switzerland (CH)</option>
+      <option value="GB">London / UK (GB)</option>
+      <option value="TH">Bangkok / Thailand (TH)</option>
+      <option value="SG">Singapore (SG)</option>
+      <option value="MY">Kuala Lumpur / Malaysia (MY)</option>
+      <option value="PL">Warsaw / Poland (PL)</option>
+      <option value="ES">Barcelona / Spain (ES)</option>
+    </select>
+    <div class="benchmark-ref" id="benchmarkRef">Select location to see targets</div>
+  </div>
+
+  <div class="decision-tool">
+    <div class="decision-header">
+      <div class="decision-header-left">
+        <div>
+          <div class="decision-title">7 Audience Set Performance — Week 1</div>
+          <div class="decision-sub">Fill each set after 7 days of data. The status indicator tells you what to do.</div>
+        </div>
+      </div>
+    </div>
+    <div class="decision-grid" id="decisionGrid">
+      <!-- generated by JS -->
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">Rules</div>
+      <div class="section-title">Decision Rules — Week 1</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Situation</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Cost Per ThruPlay <strong>below target range</strong></td><td class="tag-green">Scale — increase budget by 20%</td></tr>
+          <tr><td>Cost Per ThruPlay <strong>within target range</strong></td><td class="tag-blue">Continue — no change needed</td></tr>
+          <tr><td>Cost Per ThruPlay <strong>above target range for 7 days</strong></td><td class="tag-red">Pause — reallocate budget to top performers</td></tr>
+          <tr><td>ThruPlay Rate <strong>below 8%</strong></td><td class="tag-yellow">Pivot — test a new creative hook</td></tr>
+          <tr><td>Frequency <strong>above 3.5</strong></td><td class="tag-yellow">Expand audience or add frequency cap</td></tr>
+          <tr><td>Avg Play Time <strong>below 8 seconds</strong></td><td class="tag-red">Hook failing — pause and replace</td></tr>
+          <tr><td>CPM <strong>above benchmark</strong></td><td class="tag-yellow">Context only — dig into Cost Per ThruPlay to decide</td></tr>
+          <tr><td>CPM <strong>below benchmark</strong></td><td class="tag-green">Good delivery — Meta is spending efficiently</td></tr>
+          <tr><td>Set has <strong>fewer than 500 ThruPlays</strong> after 7 days</td><td class="tag-yellow">Wait — insufficient data, extend by 3 days before deciding</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">Budget</div>
+      <div class="section-title">Budget Reallocation Rule</div>
+    </div>
+    <div class="explain-box">
+      After Week 1, take the budget from your <strong>bottom 3–4 sets</strong> and redistribute to your <strong>top 3 sets</strong>. Never increase any single set's budget by more than <strong>20% in one change</strong> — larger jumps reset the learning phase and you lose all optimization data.
+    </div>
+  </div>
+
+</div>
+
+<!-- ======================== PANEL 3: WEEKLY ======================== -->
+<div class="panel" id="panel3">
+  <div class="explain-box">
+    <div class="explain-title">Weekly Review — Every 7 Days (30 minutes)</div>
+    This is where actual decisions are made. Set your date range to <strong>"Last 7 days"</strong> in Ads Manager before starting. Go through all 5 steps.
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-weekly">Step 1</div>
+        <div class="cadence-title">Ad Set Level Review</div>
+      </div>
+      <div class="cadence-time">~10 min</div>
+    </div>
+    <div class="table-wrap" style="margin:0">
+      <table class="action-table">
+        <thead><tr><th>Metric</th><th>Target</th><th>Alert Threshold</th><th>Action if Alert</th></tr></thead>
+        <tbody>
+          <tr><td>Cost Per ThruPlay</td><td class="tag-green">Below location target</td><td class="tag-red">2× location target</td><td>Check creative &amp; audience size</td></tr>
+          <tr><td>ThruPlay Rate</td><td class="tag-green">Above 15%</td><td class="tag-red">Below 8%</td><td>New creative hook needed</td></tr>
+          <tr><td>CPM</td><td class="tag-green">Within benchmark</td><td class="tag-red">25%+ above benchmark</td><td>Creative fatigue or audience saturation</td></tr>
+          <tr><td>Frequency</td><td class="tag-green">Below 2.5</td><td class="tag-red">Above 3.5</td><td>Expand audience or add frequency cap</td></tr>
+          <tr><td>Video Avg Play Time</td><td class="tag-green">Above 15 sec</td><td class="tag-red">Below 8 sec</td><td>Hook failing — test new opening 3 seconds</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-weekly">Step 2</div>
+        <div class="cadence-title">Ad Level Review (500+ ThruPlays only)</div>
+      </div>
+      <div class="cadence-time">~10 min</div>
+    </div>
+    <div class="table-wrap" style="margin:0">
+      <table class="action-table">
+        <thead><tr><th>Situation</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>German version beats English by 15%+ on Cost Per ThruPlay</td><td class="tag-red">Pause English version</td></tr>
+          <tr><td>English version beats German by 15%+</td><td class="tag-red">Pause German version</td></tr>
+          <tr><td>Difference less than 15%</td><td class="tag-blue">Keep both — Meta is self-optimising</td></tr>
+          <tr><td>Any ad above 2× location target with 500+ ThruPlays</td><td class="tag-red">Pause it</td></tr>
+          <tr><td>Top performer has 3× more ThruPlays than others</td><td class="tag-green">Keep it — consider pausing bottom 2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-weekly">Step 3</div>
+        <div class="cadence-title">Warm Audience Size Check</div>
+      </div>
+      <div class="cadence-time">~5 min</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Go to <strong>Audiences tab</strong> → Check your Video View Custom Audience size.</p>
+    <div class="table-wrap" style="margin:0">
+      <table class="action-table">
+        <thead><tr><th>Warm Audience Size</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Below 100,000</td><td class="tag-blue">Continue TOFU only — not ready for MOFU</td></tr>
+          <tr><td>100,000 – 500,000</td><td class="tag-yellow">Prepare MOFU campaign — launch when ready</td></tr>
+          <tr><td>Above 500,000</td><td class="tag-green">Launch MOFU immediately</td></tr>
+          <tr><td>Above 1,000,000</td><td class="tag-green">Launch BOFU alongside MOFU</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-weekly">Step 4</div>
+        <div class="cadence-title">Budget Reallocation</div>
+      </div>
+      <div class="cadence-time">~5 min</div>
+    </div>
+    <div class="explain-box" style="margin:0">
+      Move budget from underperforming sets to top performers. <strong>Never increase any single set by more than 20% in one change.</strong> Larger changes reset the learning phase.
+    </div>
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-weekly">Step 5</div>
+        <div class="cadence-title">Ads Manager Column Preset — "ThruPlay Monitor"</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Save this column set as a preset in Ads Manager for fast weekly reviews.</p>
+    <div class="table-wrap" style="margin:0">
+      <table><thead><tr><th>Column</th><th>Level</th></tr></thead>
+      <tbody>
+        <tr><td>Delivery Status</td><td>Ad Set + Ad</td></tr>
+        <tr><td>Spend</td><td>Both</td></tr>
+        <tr><td>Impressions</td><td>Both</td></tr>
+        <tr><td>Reach</td><td>Ad Set</td></tr>
+        <tr><td>Frequency</td><td>Ad Set</td></tr>
+        <tr><td>CPM</td><td>Both</td></tr>
+        <tr><td>ThruPlays</td><td>Both</td></tr>
+        <tr><td>Cost Per ThruPlay</td><td>Both</td></tr>
+        <tr><td>Video Average Play Time</td><td>Both</td></tr>
+        <tr><td>Video Plays at 25%</td><td>Ad</td></tr>
+        <tr><td>Video Plays at 75%</td><td>Ad</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PANEL 4: BI-WEEKLY ======================== -->
+<div class="panel" id="panel4">
+  <div class="explain-box">
+    <div class="explain-title">Bi-Weekly Review — Every 14 Days (60 minutes)</div>
+    Strategic review. You are checking for creative fatigue, audience saturation, and whether it's time to move to the next funnel stage. Compare Week 1 vs Week 2 data for each ad.
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-biweekly">Creative Fatigue</div>
+        <div class="cadence-title">Week 1 vs Week 2 Comparison</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">If <strong>2 or more metrics are deteriorating simultaneously</strong> on the same ad → creative fatigue. Pause it and replace with fresh creative.</p>
+    <div class="table-wrap" style="margin:0">
+      <table><thead><tr><th>Metric</th><th>Alert if...</th></tr></thead>
+      <tbody>
+        <tr><td>Cost Per ThruPlay</td><td class="tag-red">+20% or more week-over-week</td></tr>
+        <tr><td>ThruPlay Rate</td><td class="tag-red">-20% or more week-over-week</td></tr>
+        <tr><td>CPM</td><td class="tag-red">+25% or more week-over-week</td></tr>
+        <tr><td>Video Avg Play Time</td><td class="tag-red">-15% or more week-over-week</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-biweekly">Audience Saturation</div>
+        <div class="cadence-title">Is the Audience Exhausted?</div>
+      </div>
+    </div>
+    <div class="table-wrap" style="margin:0">
+      <table><thead><tr><th>Signal</th><th>What to Check</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Frequency above 3.5</td><td>Audience pool too small</td><td>Expand Lookalike % or add new set</td></tr>
+        <tr><td>Reach growth slowing</td><td>Audience nearly exhausted</td><td>Add new audience type</td></tr>
+        <tr><td>CPM rising with no creative change</td><td>Competition or saturation</td><td>Expand audience or reduce budget</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="cadence-block">
+    <div class="cadence-top">
+      <div class="cadence-title-wrap">
+        <div class="cadence-pill pill-biweekly">Funnel</div>
+        <div class="cadence-title">Funnel Progression Check</div>
+      </div>
+    </div>
+    <div class="table-wrap" style="margin:0">
+      <table><thead><tr><th>Question</th><th>Check</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Warm audience above 500,000?</td><td>Audiences tab</td><td class="tag-green">Launch MOFU</td></tr>
+        <tr><td>Website visitors above 5,000?</td><td>Website Custom Audience</td><td class="tag-green">Launch BOFU</td></tr>
+        <tr><td>Event within 30 days?</td><td>Calendar</td><td class="tag-yellow">Ensure BOFU is running</td></tr>
+        <tr><td>Event within 14 days?</td><td>Calendar</td><td class="tag-red">Max BOFU budget, reduce TOFU</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PANEL 5: BENCHMARKS ======================== -->
+<div class="panel" id="panel5">
+  <div class="explain-box">
+    <div class="explain-title">How to Read These Benchmarks</div>
+    These CPM ranges are derived from your MMI account (act_1382529368693354) last 30 days of actual spend data, converted to USD. The <strong>Cost Per ThruPlay target</strong> is calculated as approximately 3–7% of CPM (typical ThruPlay rate range). Use these as your <strong>baseline</strong> — not absolute rules. Your actual ThruPlay campaigns may perform differently once the Awareness + ThruPlay objective is fully active.
+  </div>
+
+  <div class="bench-section">
+    <div class="bench-region">🌏 APAC — Asia Pacific</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Location</th><th>CPM Baseline (USD)</th><th>Target Cost/ThruPlay</th><th>Alert if Above</th><th>Tier</th></tr></thead>
+        <tbody>
+          <tr><td>Thailand (TH)</td><td>$1.82 – $6.82</td><td class="tag-green">$0.02 – $0.05</td><td class="tag-red">$0.10</td><td>Low Cost</td></tr>
+          <tr><td>Malaysia (MY)</td><td>$5.41 – $11.60</td><td class="tag-green">$0.03 – $0.07</td><td class="tag-red">$0.14</td><td>Low Cost</td></tr>
+          <tr><td>Singapore (SG)</td><td>$22.00 – $26.50</td><td class="tag-yellow">$0.10 – $0.18</td><td class="tag-red">$0.36</td><td>Mid-High</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bench-section">
+    <div class="bench-region">🇪🇺 Europe — Standard Markets</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Location</th><th>CPM Baseline (USD)</th><th>Target Cost/ThruPlay</th><th>Alert if Above</th><th>Tier</th></tr></thead>
+        <tbody>
+          <tr><td>Poland (PL)</td><td>$1.94 – $11.32</td><td class="tag-green">$0.04 – $0.10</td><td class="tag-red">$0.20</td><td>Low Cost</td></tr>
+          <tr><td>Spain (ES)</td><td>$2.00 – $19.39</td><td class="tag-green">$0.05 – $0.12</td><td class="tag-red">$0.24</td><td>Low–Mid</td></tr>
+          <tr><td><strong>Belgium (BE) ⭐</strong></td><td>$3.46 – $16.24</td><td class="tag-yellow">$0.08 – $0.18</td><td class="tag-red">$0.36</td><td>Mid</td></tr>
+          <tr><td>Netherlands (NL)</td><td>$5.11 – $27.58</td><td class="tag-yellow">$0.10 – $0.20</td><td class="tag-red">$0.40</td><td>Mid</td></tr>
+          <tr><td><strong>Germany (DE) ⭐</strong></td><td>$4.93 – $42.27</td><td class="tag-yellow">$0.08 – $0.25</td><td class="tag-red">$0.50</td><td>Mid–High</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bench-section">
+    <div class="bench-region">💎 Premium Markets — High Competition</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Location</th><th>CPM Baseline (USD)</th><th>Target Cost/ThruPlay</th><th>Alert if Above</th><th>Tier</th></tr></thead>
+        <tbody>
+          <tr><td>UK (GB)</td><td>$29.95 – $32.48</td><td class="tag-red">$0.20 – $0.30</td><td class="tag-red">$0.60</td><td>High</td></tr>
+          <tr><td>Switzerland (CH)</td><td>$23.58 – $47.75</td><td class="tag-red">$0.18 – $0.35</td><td class="tag-red">$0.70</td><td>High</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="explain-box" style="margin-top:12px;">
+    <strong>⭐ Frankfurt (DE) and Brussels (BE) are your primary active events.</strong> For DE campaigns, expect wide CPM variance — warm audiences (retargeting) will sit at the lower end ($4–15) while cold interest audiences can reach $25–40. For BE, expect more consistent delivery at $8–16 CPM.
+  </div>
+</div>
+
+<!-- ======================== PANEL 6: RED FLAGS ======================== -->
+<div class="panel" id="panel6">
+  <div class="explain-box">
+    <div class="explain-title">Red Flag Protocol — Act Immediately, Don't Wait for Weekly Review</div>
+    These situations require same-day action. Do not wait for your weekly review slot.
+  </div>
+
+  <div class="section">
+    <div class="cl-group">
+      <div class="redflag-item">
+        <div class="redflag-icon">🔴</div>
+        <div>
+          <div class="redflag-flag">Cost Per ThruPlay doubles overnight</div>
+          <div class="redflag-action">Check if a new ad was added or budget was changed yesterday. Revert the change immediately.</div>
+        </div>
+      </div>
+      <div class="redflag-item">
+        <div class="redflag-icon">🔴</div>
+        <div>
+          <div class="redflag-flag">An ad set stops spending entirely</div>
+          <div class="redflag-action">Check audience size (too small?), budget level, and ad approval status. Check for policy violations.</div>
+        </div>
+      </div>
+      <div class="redflag-item">
+        <div class="redflag-icon">🔴</div>
+        <div>
+          <div class="redflag-flag">Frequency jumps above 4.0 in a single day</div>
+          <div class="redflag-action">Add frequency cap immediately (2 per 7 days). Your audience is too small for the budget level.</div>
+        </div>
+      </div>
+      <div class="redflag-item">
+        <div class="redflag-icon">🟡</div>
+        <div>
+          <div class="redflag-flag">Meta sends a "Learning Limited" notification</div>
+          <div class="redflag-action">Consolidate ads to 3–5 per ad set. Consider increasing budget. Do not split test during this period.</div>
+        </div>
+      </div>
+      <div class="redflag-item">
+        <div class="redflag-icon">🔴</div>
+        <div>
+          <div class="redflag-flag">ThruPlay Rate drops below 5% across all ads</div>
+          <div class="redflag-action">Pause all ads immediately. Upload fresh creatives before resuming. Do not keep spending on a failing hook.</div>
+        </div>
+      </div>
+      <div class="redflag-item">
+        <div class="redflag-icon">🟡</div>
+        <div>
+          <div class="redflag-flag">CPM rises 30%+ in 2 consecutive days with no changes made</div>
+          <div class="redflag-action">Check for seasonal events or competitor activity. Consider pausing and resuming after 48 hours to reset auction position.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- BENCHMARK DATA ----
+const benchmarks = {
+  DE: { cpm: '$4.93–$42.27', target: '$0.08–$0.25', alert: '$0.50' },
+  BE: { cpm: '$3.46–$16.24', target: '$0.08–$0.18', alert: '$0.36' },
+  NL: { cpm: '$5.11–$27.58', target: '$0.10–$0.20', alert: '$0.40' },
+  CH: { cpm: '$23.58–$47.75', target: '$0.18–$0.35', alert: '$0.70' },
+  GB: { cpm: '$29.95–$32.48', target: '$0.20–$0.30', alert: '$0.60' },
+  TH: { cpm: '$1.82–$6.82', target: '$0.02–$0.05', alert: '$0.10' },
+  SG: { cpm: '$22.00–$26.50', target: '$0.10–$0.18', alert: '$0.36' },
+  MY: { cpm: '$5.41–$11.60', target: '$0.03–$0.07', alert: '$0.14' },
+  PL: { cpm: '$1.94–$11.32', target: '$0.04–$0.10', alert: '$0.20' },
+  ES: { cpm: '$2.00–$19.39', target: '$0.05–$0.12', alert: '$0.24' }
+};
+
+const audienceSets = [
+  'Set 1: Interest / Detailed Targeting',
+  'Set 2: Lookalike Audience',
+  'Set 3: Website Visitors (180d)',
+  'Set 4: Database / CRM List',
+  'Set 5: Facebook Group',
+  'Set 6: Page Engagement (365d)',
+  'Set 7: Custom Audience'
+];
+
+// ---- BUILD DECISION GRID ----
+function buildGrid() {
+  const grid = document.getElementById('decisionGrid');
+  grid.innerHTML = '';
+  audienceSets.forEach((name, i) => {
+    const card = document.createElement('div');
+    card.className = 'audience-card';
+    card.innerHTML = `
+      <div class="audience-name">
+        <div class="audience-dot" id="dot${i}"></div>
+        ${name}
+      </div>
+      <div class="metric-row">
+        <div class="metric-label">ThruPlays</div>
+        <input class="metric-input" id="tp${i}" type="number" placeholder="0" oninput="evaluate(${i})">
+      </div>
+      <div class="metric-row">
+        <div class="metric-label">Cost/ThruPlay ($)</div>
+        <input class="metric-input" id="cpt${i}" type="number" step="0.001" placeholder="0.000" oninput="evaluate(${i})">
+      </div>
+      <div class="metric-row">
+        <div class="metric-label">CPM ($)</div>
+        <input class="metric-input" id="cpm${i}" type="number" step="0.01" placeholder="0.00" oninput="evaluate(${i})">
+      </div>
+      <div class="metric-row">
+        <div class="metric-label">ThruPlay Rate (%)</div>
+        <input class="metric-input" id="tpr${i}" type="number" step="0.1" placeholder="0.0" oninput="evaluate(${i})">
+      </div>
+      <div class="metric-row">
+        <div class="metric-label">Frequency</div>
+        <input class="metric-input" id="freq${i}" type="number" step="0.1" placeholder="0.0" oninput="evaluate(${i})">
+      </div>
+      <select class="decision-select" id="dec${i}" onchange="styleDecision(${i})">
+        <option value="">-- Decision --</option>
+        <option value="continue">✓ Continue &amp; Monitor</option>
+        <option value="scale">📈 Scale (increase budget 20%)</option>
+        <option value="pivot">🔄 Pivot (new creative)</option>
+        <option value="pause">⏸ Pause (underperforming)</option>
+      </select>
+      <div id="status${i}" style="margin-top:8px;min-height:24px;"></div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function updateBenchmarks() {
+  const loc = document.getElementById('locationSelect').value;
+  const ref = document.getElementById('benchmarkRef');
+  if (!loc || !benchmarks[loc]) {
+    ref.innerHTML = 'Select location to see targets';
+    return;
+  }
+  const b = benchmarks[loc];
+  ref.innerHTML = `CPM: <span>${b.cpm}</span> &nbsp;|&nbsp; Target: <span>${b.target}</span> &nbsp;|&nbsp; Alert: <span style="color:#f74f4f">${b.alert}</span>`;
+  // re-evaluate all
+  for (let i = 0; i < 7; i++) evaluate(i);
+}
+
+function getTargetRange(loc) {
+  if (!loc || !benchmarks[loc]) return null;
+  const t = benchmarks[loc].target;
+  const parts = t.replace(/\$/g, '').split('–');
+  return { low: parseFloat(parts[0]), high: parseFloat(parts[1]) };
+}
+
+function getAlertVal(loc) {
+  if (!loc || !benchmarks[loc]) return null;
+  return parseFloat(benchmarks[loc].alert.replace('$', ''));
+}
+
+function evaluate(i) {
+  const loc = document.getElementById('locationSelect').value;
+  const cpt = parseFloat(document.getElementById('cpt' + i).value);
+  const tp = parseFloat(document.getElementById('tp' + i).value);
+  const tpr = parseFloat(document.getElementById('tpr' + i).value);
+  const freq = parseFloat(document.getElementById('freq' + i).value);
+  const statusEl = document.getElementById('status' + i);
+  const dot = document.getElementById('dot' + i);
+  const decSel = document.getElementById('dec' + i);
+
+  if (!cpt && !tp) { statusEl.innerHTML = ''; return; }
+
+  let messages = [];
+  let suggested = 'continue';
+
+  if (tp < 500 && tp > 0) {
+    messages.push('<span class="status-indicator status-warn">⏳ Need 500+ ThruPlays to decide</span>');
+  }
+
+  if (loc && cpt > 0) {
+    const range = getTargetRange(loc);
+    const alertVal = getAlertVal(loc);
+    if (range) {
+      if (cpt < range.low) {
+        messages.push('<span class="status-indicator status-good">✓ Below target — SCALE</span>');
+        suggested = 'scale';
+      } else if (cpt <= range.high) {
+        messages.push('<span class="status-indicator status-good">✓ Within target — CONTINUE</span>');
+        suggested = 'continue';
+      } else if (cpt <= alertVal) {
+        messages.push('<span class="status-indicator status-warn">⚠ Above target — MONITOR</span>');
+        suggested = 'continue';
+      } else {
+        messages.push('<span class="status-indicator status-bad">✕ Alert level — PAUSE</span>');
+        suggested = 'pause';
+      }
+    }
+  }
+
+  if (tpr > 0 && tpr < 8) {
+    messages.push('<span class="status-indicator status-warn">⚠ ThruPlay Rate low — PIVOT creative</span>');
+    suggested = 'pivot';
+  }
+  if (freq > 3.5) {
+    messages.push('<span class="status-indicator status-warn">⚠ Frequency high — expand audience</span>');
+  }
+
+  statusEl.innerHTML = messages.join(' ');
+  dot.classList.toggle('active', messages.length > 0);
+
+  if (!decSel.value && suggested) {
+    decSel.value = suggested;
+    styleDecision(i);
+  }
+}
+
+function styleDecision(i) {
+  const sel = document.getElementById('dec' + i);
+  sel.className = 'decision-select';
+  if (sel.value === 'scale') sel.classList.add('scale');
+  else if (sel.value === 'pause') sel.classList.add('pause');
+  else if (sel.value === 'pivot') sel.classList.add('pivot');
+}
+
+// ---- CHECKLIST ENGINE ----
+function toggle(item) {
+  const cb = item.querySelector('.cl-checkbox');
+  const checked = cb.classList.toggle('checked');
+  item.classList.toggle('done', checked);
+  updateProgress();
+  saveState();
+}
+
+function updateProgress() {
+  const all = document.querySelectorAll('.cl-checkbox');
+  const done = document.querySelectorAll('.cl-checkbox.checked');
+  const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+function resetAll() {
+  document.querySelectorAll('.cl-checkbox').forEach(cb => {
+    cb.classList.remove('checked');
+    cb.closest('.cl-item').classList.remove('done');
+  });
+  updateProgress();
+  localStorage.removeItem('mmi-thruplay');
+}
+
+function saveState() {
+  const state = Array.from(document.querySelectorAll('.cl-checkbox')).map(cb => cb.classList.contains('checked'));
+  localStorage.setItem('mmi-thruplay', JSON.stringify(state));
+}
+
+function loadState() {
+  const saved = localStorage.getItem('mmi-thruplay');
+  if (!saved) return;
+  const state = JSON.parse(saved);
+  document.querySelectorAll('.cl-checkbox').forEach((cb, i) => {
+    if (state[i]) {
+      cb.classList.add('checked');
+      cb.closest('.cl-item').classList.add('done');
+    }
+  });
+  updateProgress();
+}
+
+// ---- TABS ----
+const panels = document.querySelectorAll('.panel');
+const tabs = document.querySelectorAll('.tab');
+
+function switchTab(n) {
+  panels.forEach((p, i) => p.classList.toggle('active', i === n));
+  tabs.forEach((t, i) => t.classList.toggle('active', i === n));
+}
+
+// ---- INIT ----
+buildGrid();
+loadState();
+updateProgress();
+</script>
+</body>
+</html>
