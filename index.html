@@ -196,7 +196,10 @@ h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
     <div class="section">
       <div class="section-title">
         <span class="section-label">3</span>
-        <span>Audience Setup</span>
+        <span>Audience Setup — TOFU vs Warm</span>
+      </div>
+      <div class="explain-box">
+        <strong>TOFU cold audiences only.</strong> Your team must define all 7 sets before launching. Every set must target people who have never interacted with MMI. Sets 1–4 are suggested starting points — your team fills in Sets 5–7 based on the specific event market.
       </div>
       <div class="checklist" id="audienceChecks"></div>
     </div>
@@ -452,28 +455,28 @@ const setupChecks = [
 
 const creativeChecks = [
   {
-    label: 'Video Size 1: 1080×1920 Vertical (PRIORITY)',
-    note: 'Covers Reels & Stories. 78% more screen space on mobile = higher ThruPlay rate',
+    label: 'Video Size 1: 1080×1920 Vertical — PRIORITY',
+    note: '📍 Placements: Reels, Stories (Facebook & Instagram), Mobile Feed. 78% more screen space on mobile = highest ThruPlay rate. Always upload this first.',
     critical: true
   },
   {
     label: 'Video Size 2: 1080×1080 Square',
-    note: 'Covers Feed placements',
+    note: '📍 Placements: Facebook Feed, Instagram Feed, Marketplace, Right Column. Best for desktop feed viewers.',
     critical: false
   },
   {
     label: 'Video Size 3: 1920×1080 Horizontal',
-    note: 'Covers in-stream & desktop',
+    note: '📍 Placements: In-Stream Video (mid-roll), Facebook Watch, Audience Network, Desktop Feed. Covers non-mobile placements.',
     critical: false
   },
   {
     label: 'All 3 sizes uploaded to the SAME ad (not separate ads)',
-    note: 'Consolidates social proof — all views count on one post. Separate ads split views.',
+    note: 'Meta auto-serves the best format per placement. Consolidates social proof — all views count on one post. Separate ads split your view count and data.',
     critical: true
   },
   {
     label: 'Captions & Subtitles Added',
-    note: '85% of video watched without sound. No captions = lost ThruPlays.',
+    note: '85% of video is watched without sound. No captions = lost ThruPlays. Add via Meta auto-caption or upload SRT file.',
     critical: true
   },
   {
@@ -483,7 +486,7 @@ const creativeChecks = [
   },
   {
     label: 'Video Hook: First 3 seconds grab attention',
-    note: 'Most drops happen at 3s. Make the hook immediately relevant to the audience.',
+    note: 'Most drop-offs happen at 3s. Open with a bold statement, question, or visual that immediately speaks to your audience\'s pain point.',
     critical: true
   },
   {
@@ -500,38 +503,44 @@ const creativeChecks = [
 
 const audienceChecks = [
   {
-    label: 'Audience Set 1: Interest / Detailed Targeting',
-    note: 'Minimum 100k–500k audience size',
+    label: '— TOFU Cold Audiences Only — Complete all 7 sets before launching —',
+    note: 'Each set must be a cold audience. People who have never interacted with MMI before.',
+    critical: false,
+    isHeader: true
+  },
+  {
+    label: 'TOFU Set 1: Interest / Detailed Targeting',
+    note: 'Target by interest, behaviour, demographics. Minimum 100k–500k audience size.',
     critical: true
   },
   {
-    label: 'Audience Set 2: Lookalike Audience',
-    note: '1% or 5% lookalike from best customers',
+    label: 'TOFU Set 2: Broad / Advantage+ Audience',
+    note: 'No interest stacking. Let Meta find the right cold audience within your country + age range.',
     critical: false
   },
   {
-    label: 'Audience Set 3: Website Visitors (180d)',
-    note: 'All website visitors from last 6 months',
+    label: 'TOFU Set 3: 1% Lookalike — from CRM / Buyer List',
+    note: 'Lookalike based on your actual customer database. Cold traffic that resembles your best buyers.',
     critical: true
   },
   {
-    label: 'Audience Set 4: Database / CRM List',
-    note: 'Email list uploaded and hashed',
+    label: 'TOFU Set 4: 5% Lookalike — from Video Views or Page Fans',
+    note: 'Wider lookalike for scale. The lookalike itself is cold — not the source audience.',
     critical: false
   },
   {
-    label: 'Audience Set 5: Facebook Group',
-    note: 'Members of relevant group (if applicable)',
+    label: 'TOFU Set 5: ___________________________',
+    note: 'Define your cold audience set. Must be people with no prior MMI interaction.',
     critical: false
   },
   {
-    label: 'Audience Set 6: Facebook Page Engagement (365d)',
-    note: 'People who engaged with MMI page in the last year',
+    label: 'TOFU Set 6: ___________________________',
+    note: 'Define your cold audience set. Must be people with no prior MMI interaction.',
     critical: false
   },
   {
-    label: 'Audience Set 7: Custom Audience / Other',
-    note: 'Any remaining retargeting list specific to the event',
+    label: 'TOFU Set 7: ___________________________',
+    note: 'Define your cold audience set. Must be people with no prior MMI interaction.',
     critical: false
   }
 ];
@@ -600,8 +609,25 @@ const metrics = [
 function renderChecklist(containerId, items) {
   const container = document.getElementById(containerId);
   items.forEach(item => {
+    if (item.isHeader) {
+      const header = document.createElement('div');
+      header.style.cssText = `
+        padding: 9px 16px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-bottom: 1px solid var(--border);
+        ${item.isWarm
+          ? 'background: rgba(247,144,79,0.08); color: var(--warn); border-left: 3px solid var(--warn);'
+          : 'background: rgba(79,142,247,0.08); color: var(--accent); border-left: 3px solid var(--accent);'}
+      `;
+      header.innerHTML = `${item.label} <span style="font-weight:400;opacity:0.7;text-transform:none;letter-spacing:0;margin-left:6px;">${item.note}</span>`;
+      container.appendChild(header);
+      return;
+    }
     const check = document.createElement('div');
-    check.className = `check-item ${item.critical ? 'critical' : ''}`;
+    check.className = `check-item ${item.critical ? 'critical' : ''} ${item.isWarm ? 'warn' : ''}`;
     check.onclick = () => toggle(check);
     check.innerHTML = `
       <div class="checkbox"></div>
@@ -609,6 +635,7 @@ function renderChecklist(containerId, items) {
         <div class="label">
           ${item.label}
           ${item.critical ? '<span class="badge badge-critical">Critical</span>' : ''}
+          ${item.isWarm ? '<span class="badge badge-warn">Warm — Not TOFU</span>' : ''}
         </div>
         <div class="note">${item.note}</div>
       </div>
